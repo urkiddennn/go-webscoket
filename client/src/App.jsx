@@ -5,6 +5,7 @@ const App = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [ws, setWs] = useState(null);
+  const [clientId, setClientId] = useState(null);
 
   useEffect(() => {
     const websocket = new WebSocket("ws://localhost:8080/ws");
@@ -12,24 +13,59 @@ const App = () => {
 
     websocket.onopen = () => console.log("Connected to WebSocket Server");
     websocket.onmessage = (event) => {
-      setMessages((prevMessages) => [...prevMessages, event.data]);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Received WebSocket message:", data);
+        if (data.clientId) {
+          setClientId(data.clientId);
+          console.log("Set clientId:", data.clientId);
+        } else if (data.senderId && data.content) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              senderId: data.senderId,
+              content: data.content,
+              timestamp: new Date(),
+            },
+          ]);
+          console.log("Added message:", data.content);
+        } else {
+          console.warn("Invalid message format:", data);
+        }
+      } catch (err) {
+        console.error("Error parsing WebSocket message:", err, event.data);
+      }
     };
+    websocket.onerror = (err) => console.error("WebSocket error:", err);
     websocket.onclose = () => console.log("Disconnected from WebSocket server");
 
-    return () => websocket.close();
+    return () => {
+      websocket.close();
+    };
   }, []);
 
   const handleChange = (e) => {
-    setInput(e.target.value); // Update input state
+    setInput(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (ws && ws.readyState === WebSocket.OPEN && input.trim()) {
-      ws.send(input); // Send message to WebSocket
-      setMessages((prevMessages) => [...prevMessages, input]); // Add to local messages
-      setInput(""); // Clear input
+      const message = { content: input };
+      try {
+        ws.send(JSON.stringify(message));
+        console.log("Sent message:", message);
+        setInput("");
+      } catch (err) {
+        console.error("Error sending message:", err);
+      }
+    } else {
+      console.warn("Cannot send: WebSocket not open or input empty");
     }
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -47,9 +83,20 @@ const App = () => {
           <div className="chat-bubble">You underestimate my power!</div>
         </div>
         {/* Dynamic WebSocket messages */}
-        {messages.map((message, index) => (
-          <div key={index} className="chat chat-end">
-            <div className="chat-bubble">{message}</div>
+        {messages.length === 0 && (
+          <div className="text-center text-gray-500">No messages yet...</div>
+        )}
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`chat ${msg.senderId === clientId ? "chat-end" : "chat-start"}`}
+          >
+            <div className="chat-bubble">
+              {msg.content}
+              <div className="chat-footer text-xs opacity-50 mt-1">
+                {formatTime(msg.timestamp)}
+              </div>
+            </div>
           </div>
         ))}
 
