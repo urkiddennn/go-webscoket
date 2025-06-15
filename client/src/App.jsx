@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { IoSend } from "react-icons/io5";
+import Avatar from "./components/Avatar";
 
 const App = () => {
   const [messages, setMessages] = useState([]);
@@ -69,7 +70,10 @@ const App = () => {
   };
 
   return (
-    <div className="w-full h-screen p-5 flex flex-col gap-3 justify-center items-center">
+    <div
+      className="w-full h-screen p-5 flex flex-col gap-3 justify-center items-center"
+      data-theme="night"
+    >
       <h1 className="font-semibold text-3xl">Chat Section</h1>
       <div className="w-1/2 h-1/2 outline-1 outline-gray-600 rounded-lg relative p-3 overflow-y-auto">
         {/* Static example messages */}
@@ -91,6 +95,11 @@ const App = () => {
             key={index}
             className={`chat ${msg.senderId === clientId ? "chat-end" : "chat-start"}`}
           >
+            <div className="chat-image avatar">
+              <div className="w-10 rounded-full">
+                <Avatar />
+              </div>
+            </div>
             <div className="chat-bubble">
               {msg.content}
               <div className="chat-footer text-xs opacity-50 mt-1">
@@ -99,25 +108,24 @@ const App = () => {
             </div>
           </div>
         ))}
-
-        <form
-          className="absolute bottom-2.5 left-0 flex gap-3 w-full pr-3 pl-3"
-          onSubmit={handleSubmit}
-        >
-          <input
-            type="text"
-            value={input}
-            name="message"
-            onChange={handleChange}
-            placeholder="Type here"
-            className="input w-full"
-          />
-          <button className="btn text-lg btn-neutral" type="submit">
-            Send
-            <IoSend size={20} />
-          </button>
-        </form>
       </div>
+      <form
+        className="absolute bottom-1/6 flex gap-3 w-1/2 pr-3 pl-3 z-10"
+        onSubmit={handleSubmit}
+      >
+        <input
+          type="text"
+          value={input}
+          name="message"
+          onChange={handleChange}
+          placeholder="Type here"
+          className="input w-full"
+        />
+        <button className="btn text-lg btn-neutral" type="submit">
+          Send
+          <IoSend size={20} />
+        </button>
+      </form>
     </div>
   );
 };
