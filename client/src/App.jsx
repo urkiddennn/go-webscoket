@@ -70,13 +70,10 @@ const App = () => {
   };
 
   return (
-    <div
-      className="w-full h-screen p-5 flex flex-col gap-3 justify-center items-center"
-      data-theme="night"
-    >
+    <div className="w-full h-screen p-5 flex flex-col gap-3 justify-center items-center">
       <label className="swap swap-rotate top-10 right-10 absolute">
         {/* this hidden checkbox controls the state */}
-        <input type="checkbox" className="theme-controller" value="synthwave" />
+        <input type="checkbox" className="theme-controller" value="night" />
 
         {/* sun icon */}
         <svg
